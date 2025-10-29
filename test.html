@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quickbase Proxy Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      padding: 40px;
+      color: #333;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    .page-title {
+      font-size: 2em;
+      font-weight: bold;
+      color: #0066cc;
+      margin-bottom: 10px;
+    }
+    .btn {
+      background: #0078d7;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      margin: 6px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .btn:hover {
+      background: #005fa3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      max-width: 600px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="pageName" class="page-title">Loading page name...</div>
+  
+  <p>Click a button below to fetch data via your secure Vercel proxy:</p>
+  <button class="btn" onclick="getData('main')">Load Main Data</button>
+  <button class="btn" onclick="getData('projects')">Load Projects</button>
+  <button class="btn" onclick="getData('team')">Load Team</button>
+  <div id="result" class="result">Data will appear here...</div>
+  
+  <script>
+    async function loadPageName() {
+      const baseUrl = "https://quickbase-proxy-beta.vercel.app/api";
+      const nameDiv = document.getElementById("pageName");
+      
+      try {
+        const response = await fetch(`${baseUrl}?id=name`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load name`);
+        }
+        
+        const text = await response.text();
+        nameDiv.textContent = text;
+      } catch (error) {
+        nameDiv.textContent = "not loading name";
+        console.error("Error loading name:", error);
+      }
+    }
+
+    async function getData(id) {
+      const baseUrl = "https://quickbase-proxy-beta.vercel.app/api"; 
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = "Loading...";
+      
+      try {     
+        const response = await fetch(`${baseUrl}?id=name`);
+
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Failed to load name`);
+        }
+        
+        const text = await response.text();
+        resultDiv.innerHTML = `<pre>${text}</pre>`;
+      } catch (error) {
+        resultDiv.textContent = "Error: " + error.message;
+        console.error("Fetch error:", error);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', loadPageName);
+  </script>
+</body>
+</html>
