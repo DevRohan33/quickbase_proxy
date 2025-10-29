@@ -1,14 +1,19 @@
 export default async function handler(req, res) {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
+  const allowedDomain = "https://uirtus.quickbase.com";
   const origin = req.headers.origin || "";
+  const referer = req.headers.referer || "";
 
-  // Restrict domain access
-  if (origin !== allowedOrigin) {
-    return res.status(403).json({ error: "Access Denied: Invalid Origin" });
+  // Allow any request that comes from uirtus.quickbase.com
+  const isAllowed =
+    origin === allowedDomain ||
+    referer.startsWith(allowedDomain);
+
+  if (!isAllowed) {
+    return res.status(403).json({ error: "Access Denied: Invalid Origin or Referer" });
   }
 
   // CORS setup
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  res.setHeader("Access-Control-Allow-Origin", allowedDomain);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -16,7 +21,7 @@ export default async function handler(req, res) {
     return res.status(200).end(); // Handle preflight
   }
 
-  //  Map allowed API IDs to environment variables
+  // Map allowed API IDs to environment variables
   const apiMap = {
     main: process.env.API_MAIN,
     projects: process.env.API_PROJECTS,
@@ -31,7 +36,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Forward request to Quickbase API
+    // Forward request to the actual API
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: { "Content-Type": "application/json" },
