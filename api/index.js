@@ -45,6 +45,7 @@ export default async function handler(req, res) {
     main: process.env.API_MAIN,
     projects: process.env.API_PROJECTS,
     team: process.env.API_TEAM,
+    name: process.env.API_NAME,  
   };
 
   const targetUrl = apiMap[id];
