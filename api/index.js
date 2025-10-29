@@ -41,39 +41,49 @@ export default async function handler(req, res) {
   console.log("API ID:", id);
 
   // Map allowed API IDs
-  const apiMap = {
+  const dataMap = {
     main: process.env.API_MAIN,
     projects: process.env.API_PROJECTS,
     team: process.env.API_TEAM,
-    name: process.env.API_NAME,  
+    name: process.env.API_NAME,
   };
 
-  const targetUrl = apiMap[id];
+  const data = dataMap[id];
 
-  if (!targetUrl) {
+  if (!data) {
     console.log("Invalid API ID");
     return res.status(404).json({ error: "Invalid API ID" });
   }
 
-  console.log("Proxying to:", targetUrl.substring(0, 50) + "...");
+  console.log("Returning data for:", id);
 
-  try {
-    const response = await fetch(targetUrl, {
-      method: req.method,
-      headers: { "Content-Type": "application/json" },
-    });
+  // Check if data is a URL (starts with http)
+  if (data.startsWith("http://") || data.startsWith("https://")) {
+    // It's a URL, fetch it
+    try {
+      const response = await fetch(data, {
+        method: req.method,
+        headers: { "Content-Type": "application/json" },
+      });
 
-    console.log("Target API responded:", response.status);
+      console.log("Target API responded:", response.status);
 
-    const contentType = response.headers.get("content-type");
-    const data =
-      contentType && contentType.includes("application/json")
-        ? await response.json()
-        : await response.text();
+      const contentType = response.headers.get("content-type");
+      const fetchedData =
+        contentType && contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
 
-    return res.status(response.status).send(data);
-  } catch (err) {
-    console.error("Proxy Error:", err);
-    return res.status(500).json({ error: "Internal Server Error", message: err.message });
+      return res.status(response.status).send(fetchedData);
+    } catch (err) {
+      console.error("Proxy Error:", err);
+      return res.status(500).json({ 
+        error: "Internal Server Error", 
+        message: err.message 
+      });
+    }
+  } else {
+    // It's plain text, return it directly
+    return res.status(200).send(data);
   }
 }
