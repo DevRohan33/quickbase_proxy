@@ -62,10 +62,18 @@ export default async function handler(req, res) {
   if (data.startsWith("http://") || data.startsWith("https://")) {
     // It's a URL, fetch it
     try {
-      const response = await fetch(data, {
-        method: req.method,
-        headers: { "Content-Type": "application/json" },
-      });
+    const url = new URL(data);
+    for (const [key, value] of Object.entries(req.query)) {
+      if (key !== "id") url.searchParams.append(key, value);
+    }
+
+    console.log("Fetching target URL:", url.toString());
+
+    const response = await fetch(url, {
+      method: req.method,
+      headers: { "Content-Type": "application/json" },
+    });
+
 
       console.log("Target API responded:", response.status);
 
